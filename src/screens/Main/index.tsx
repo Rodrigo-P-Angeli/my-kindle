@@ -65,8 +65,9 @@ export default function Main({ navigation }: Props) {
     <SafeAreaView
       style={{
         flex: 1,
-        padding: 30,
-        paddingTop: insets.top + 30,
+        backgroundColor: "black",
+        padding: 0,
+        paddingTop: insets.top + 20,
         paddingBottom: insets.bottom,
       }}
     >
@@ -74,15 +75,16 @@ export default function Main({ navigation }: Props) {
         data={bookList}
         keyExtractor={(item) => item.uri}
         renderItem={({ item }) => (
-          <FileImage
+          <FileCard
             file={item}
             navigation={navigation}
             deleteFile={deleteFile}
           />
         )}
+        contentContainerStyle={{ padding: 20, paddingBottom: 100 }}
         ItemSeparatorComponent={() => (
           <View
-            style={{ backgroundColor: "black", width: "100%", height: 0.5 }}
+            style={{ backgroundColor: "#222", width: "100%", height: 10 }}
           />
         )}
       />
@@ -96,8 +98,12 @@ const AddBookButton = ({
 }: {
   addBookList: (item: BookFileType) => void;
 }) => {
+  const [pressed, setPressed] = React.useState(false);
   return (
     <TouchableOpacity
+      activeOpacity={0.8}
+      onPressIn={() => setPressed(true)}
+      onPressOut={() => setPressed(false)}
       onPress={async () => {
         try {
           const asdfs = await DocumentPicker.getDocumentAsync();
@@ -113,25 +119,37 @@ const AddBookButton = ({
           ToastAndroid.show(JSON.stringify(error), ToastAndroid.LONG);
         }
       }}
+      style={{
+        position: "absolute",
+        bottom: 30,
+        right: 30,
+        shadowColor: "#fff",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.4,
+        shadowRadius: 8,
+        elevation: 8,
+        transform: [{ scale: pressed ? 0.95 : 1 }],
+      }}
     >
       <View
         style={{
-          backgroundColor: "#888",
-          width: 60,
-          height: 60,
-          borderRadius: 60,
+          backgroundColor: "#222",
+          width: 64,
+          height: 64,
+          borderRadius: 32,
           justifyContent: "center",
           alignItems: "center",
-          alignSelf: "flex-end",
+          borderWidth: 2,
+          borderColor: "#444",
         }}
       >
-        <Text style={{ fontSize: 30, color: "white" }}>+</Text>
+        <Text style={{ fontSize: 36, color: "#fff", fontWeight: "bold" }}>+</Text>
       </View>
     </TouchableOpacity>
   );
 };
 
-const FileImage = ({
+const FileCard = ({
   file,
   deleteFile,
   navigation,
@@ -140,19 +158,35 @@ const FileImage = ({
   deleteFile: (fileName: string) => Promise<void>;
   navigation: NativeStackNavigationProp<RootStackParamList, "Home">;
 }) => {
+  const [pressed, setPressed] = React.useState(false);
   return (
     <TouchableOpacity
       onPress={() => {
-        navigation.navigate("Book", { fileUrl: file.uri });
+        navigation.navigate("Book", { fileUrl: file.uri, bookName: file.name });
       }}
       onLongPress={() => deleteFile(file.name)}
+      onPressIn={() => setPressed(true)}
+      onPressOut={() => setPressed(false)}
+      style={{
+        backgroundColor: pressed ? "#333" : "#181818",
+        borderRadius: 16,
+        padding: 20,
+        marginBottom: 0,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 6,
+        elevation: 4,
+        transform: [{ scale: pressed ? 0.98 : 1 }],
+      }}
     >
       <Text
         numberOfLines={2}
         style={{
-          flex: 1,
-          width: Dimensions.get("screen").width - 60,
-          paddingVertical: 15,
+          color: "#fff",
+          fontSize: 18,
+          fontWeight: "bold",
+          letterSpacing: 0.5,
         }}
       >
         {file.name}

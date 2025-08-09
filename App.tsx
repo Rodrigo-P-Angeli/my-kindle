@@ -37,5 +37,5 @@ function RootStack() {
 
 export type RootStackParamList = {
   Home: undefined;
-  Book: { fileUrl: string };
+  Book: { fileUrl: string, bookName: string };
 };

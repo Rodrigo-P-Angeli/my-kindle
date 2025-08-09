@@ -11,7 +11,13 @@ import {
   Text,
   View,
 } from "react-native";
-import { Reader, useReader, Themes, Location } from "@epubjs-react-native/core";
+import {
+  Reader,
+  useReader,
+  Themes,
+  Location,
+  Section,
+} from "@epubjs-react-native/core";
 import { useFileSystem } from "@epubjs-react-native/expo-file-system";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { RootStackParamList } from "../../../App";
@@ -31,15 +37,14 @@ export default function Book({ route }: Props) {
     theme,
     section,
     changeFontSize,
+    changeFontFamily,
   } = useReader();
   const insets = useSafeAreaInsets();
-
+  const bookRef = React.useRef(null);
   const [loading, setLoading] = React.useState(true);
   const [loadingBook, setLoadingBook] = React.useState(true);
   const [showButtons, setShowButtons] = React.useState(false);
   const [fontSize, setFontSize] = React.useState(100);
-  const [currentLocations, setcurrentLocation] =
-    React.useState<Location | null>();
   const [locationTostart, setLocationToStart] = React.useState<string>("");
 
   React.useEffect(() => {
@@ -52,43 +57,24 @@ export default function Book({ route }: Props) {
   }, []);
 
   React.useEffect(() => {
-    if (currentLocation) {
-      setcurrentLocation(currentLocation);
-    }
-  }, [currentLocation, totalLocations]);
-
-  React.useEffect(() => {
     setLoading(true);
     const retriveData = async () => {
+      console.log(route.params.fileUrl);
+
       const data = await AsyncStorage.getItem(
-        "BookProgress" + route.params.fileUrl
+        "BookProgress" + route.params.bookName
       );
       if (data) {
         const dataParsed = JSON.parse(data);
         changeFontSize(dataParsed.fontSize + "%");
         setFontSize(dataParsed.fontSize);
+        console.log("recuperou", dataParsed.onReturn);
         setLocationToStart(dataParsed.onReturn);
       }
       setLoading(false);
     };
     retriveData();
   }, []);
-
-  React.useEffect(() => {
-    console.log({
-      fontSize,
-      onReturn: currentLocations?.start.cfi,
-      currentLocations,
-    });
-
-    AsyncStorage.setItem(
-      "BookProgress" + route.params.fileUrl,
-      JSON.stringify({
-        fontSize,
-        onReturn: currentLocations?.start.cfi,
-      })
-    );
-  }, [fontSize, currentLocations?.start.cfi]);
 
   if (!route.params.fileUrl) {
     return <SafeAreaView style={{ flex: 1 }}></SafeAreaView>;
@@ -114,6 +100,25 @@ export default function Book({ route }: Props) {
     })
     .runOnJS(true);
 
+  const onLocationChange = async (
+    totalLocations: number,
+    currentLocation: Location,
+    progress: number,
+    currentSection: Section | null
+  ) => {
+    if (currentLocation?.start?.cfi && !loadingBook) {
+      console.log("salvou: ", currentLocation?.start.cfi);
+
+      await AsyncStorage.setItem(
+        "BookProgress" + route.params.bookName,
+        JSON.stringify({
+          fontSize,
+          onReturn: currentLocation?.start.cfi,
+        })
+      );
+    }
+  };
+
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <GestureHandlerRootView
@@ -137,16 +142,24 @@ export default function Book({ route }: Props) {
         )}
         <GestureDetector gesture={tap}>
           <View style={{ flex: 1 }}>
-            <View collapsable={false} style={{ flex: 1 }}>
+            <View
+              collapsable={false}
+              style={{ flex: 1, backgroundColor: "black", padding: 20 }}
+            >
               <Reader
-                defaultTheme={Themes.DARK}
+                onLocationChange={onLocationChange}
+                defaultTheme={defaultTheme}
                 src={route.params.fileUrl}
                 fileSystem={useFileSystem}
                 onLocationsReady={() => {
+                  changeFontFamily("Droid Sans");
                   setLoadingBook(false);
                   changeFontSize(fontSize + "%");
+                  // goToLocation("epubcfi(/6/20!/4/50/3:1)");
                   goToLocation(locationTostart);
                 }}
+                flow="paginated"
+                enableSelection={true}
                 injectedJavascript={INJECTEDJAVASCRIPT}
               />
             </View>
@@ -159,11 +172,12 @@ export default function Book({ route }: Props) {
               }}
             >
               <Text style={{ color: "white" }}>
-                Página {currentLocations?.start?.location ?? 0} de {totalLocations}
+                Página {currentLocation?.start?.location ?? 0} de{" "}
+                {totalLocations}
               </Text>
               <Text style={{ color: "white" }}>
-                {(currentLocations?.start?.percentage
-                  ? currentLocations?.start?.percentage * 100
+                {(currentLocation?.start?.percentage
+                  ? currentLocation?.start?.percentage * 100
                   : 0
                 ).toFixed(0)}
                 %
@@ -193,3 +207,18 @@ export default function Book({ route }: Props) {
 }
 
 const INJECTEDJAVASCRIPT = `const meta = document.createElement('meta'); meta.setAttribute('content', 'width=device-width, initial-scale=1, user-scalable=0'); meta.setAttribute('name', 'viewport'); document.getElementsByTagName('head')[0].appendChild(meta); `;
+const defaultTheme = {
+  body: {
+    background: "#000000",
+    color: "#ffffff",
+  },
+  span: {
+    color: "#ffffff",
+  },
+  p: {
+    color: "#ffffff",
+  },
+  div: {
+    color: "#ffffff",
+  },
+};
