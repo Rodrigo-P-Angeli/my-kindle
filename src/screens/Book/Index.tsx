@@ -152,14 +152,12 @@ export default function Book({ route }: Props) {
                 src={route.params.fileUrl}
                 fileSystem={useFileSystem}
                 onLocationsReady={() => {
-                  changeFontFamily("Droid Sans");
+                  changeFontFamily("Georgia, Times New Roman, serif");
                   setLoadingBook(false);
                   changeFontSize(fontSize + "%");
-                  // goToLocation("epubcfi(/6/20!/4/50/3:1)");
                   goToLocation(locationTostart);
                 }}
                 flow="paginated"
-                enableSelection={true}
                 injectedJavascript={INJECTEDJAVASCRIPT}
               />
             </View>
@@ -210,15 +208,30 @@ const INJECTEDJAVASCRIPT = `const meta = document.createElement('meta'); meta.se
 const defaultTheme = {
   body: {
     background: "#000000",
-    color: "#ffffff",
+    // color: "#ffffff",
+    // 'font-family': "Georgia", "Times New Roman", serif; /* parece uma fonte serifada de leitura */
+    'font-size': '18px', /* aproximação, pode estar entre 16px e 20px */
+    'line-height': '1.6', /* espaçamento de linha confortável para leitura */
+    color: '#e0e0e0',
+    // color: '#000000',
   },
   span: {
-    color: "#ffffff",
+    // color: "#ffffff",
+    // color: '#e0e0e0',
   },
   p: {
-    color: "#ffffff",
+    // color: '#e0e0e0',
+    // color: "#ffffff",
+    // 'line-height': '2em',
+    // 'text-align': 'left'
   },
   div: {
-    color: "#ffffff",
+    // color: "#ffffff",
   },
+  calibre_13: {
+    // 'line-height': '2em'
+  },
+  calibre_11: {
+    // 'line-height': '2em',
+  }
 };
