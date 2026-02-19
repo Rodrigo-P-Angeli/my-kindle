@@ -44,7 +44,7 @@ export default function Book({ route }: Props) {
   const [loading, setLoading] = React.useState(true);
   const [loadingBook, setLoadingBook] = React.useState(true);
   const [showButtons, setShowButtons] = React.useState(false);
-  const [fontSize, setFontSize] = React.useState(100);
+  const [fontSize, setFontSize] = React.useState(40);
   const [locationTostart, setLocationToStart] = React.useState<string>("");
 
   React.useEffect(() => {
@@ -66,9 +66,9 @@ export default function Book({ route }: Props) {
       );
       if (data) {
         const dataParsed = JSON.parse(data);
-        changeFontSize(dataParsed.fontSize + "%");
+        changeFontSize(dataParsed.fontSize + "px");
         setFontSize(dataParsed.fontSize);
-        console.log("recuperou", dataParsed.onReturn);
+        console.log("recuperou", dataParsed.onReturn, dataParsed.fontSize);
         setLocationToStart(dataParsed.onReturn);
       }
       setLoading(false);
@@ -81,12 +81,12 @@ export default function Book({ route }: Props) {
   }
 
   const increaseFontSize = () => {
-    changeFontSize(fontSize + fontIncrease + "%");
+    changeFontSize(fontSize + fontIncrease + "px");
     setFontSize(fontSize + fontIncrease);
   };
 
   const decreaseFontSize = () => {
-    changeFontSize(fontSize - fontIncrease + "%"); // Example: Decrease font size by 20%
+    changeFontSize(fontSize - fontIncrease + "px"); // Example: Decrease font size by 20%
     setFontSize(fontSize - fontIncrease);
   };
 
@@ -106,14 +106,12 @@ export default function Book({ route }: Props) {
     progress: number,
     currentSection: Section | null
   ) => {
-    if (currentLocation?.start?.cfi && !loadingBook) {
-      console.log("salvou: ", currentLocation?.start.cfi);
-
+    if (currentLocation?.end?.cfi && !loadingBook) {
       await AsyncStorage.setItem(
         "BookProgress" + route.params.bookName,
         JSON.stringify({
           fontSize,
-          onReturn: currentLocation?.start.cfi,
+          onReturn: currentLocation?.end.cfi,
         })
       );
     }
@@ -153,9 +151,9 @@ export default function Book({ route }: Props) {
                 fileSystem={useFileSystem}
                 onLocationsReady={() => {
                   changeFontFamily("Georgia, Times New Roman, serif");
-                  setLoadingBook(false);
-                  changeFontSize(fontSize + "%");
                   goToLocation(locationTostart);
+                  changeFontSize(fontSize + "px");
+                  setLoadingBook(false);
                 }}
                 flow="paginated"
                 injectedJavascript={INJECTEDJAVASCRIPT}
