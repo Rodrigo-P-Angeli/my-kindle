@@ -25,7 +25,7 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as NavigationBar from "expo-navigation-bar";
 import { setStatusBarHidden, StatusBar } from "expo-status-bar";
-const fontIncrease = 10;
+const fontIncrease = 2;
 
 type Props = NativeStackScreenProps<RootStackParamList, "Book">;
 
