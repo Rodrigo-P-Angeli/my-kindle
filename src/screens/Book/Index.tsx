@@ -40,12 +40,9 @@ export default function Book({ route }: Props) {
     changeFontFamily,
   } = useReader();
   const insets = useSafeAreaInsets();
-  const bookRef = React.useRef(null);
-  const [loading, setLoading] = React.useState(true);
   const [loadingBook, setLoadingBook] = React.useState(true);
   const [showButtons, setShowButtons] = React.useState(false);
   const [fontSize, setFontSize] = React.useState(40);
-  const [locationTostart, setLocationToStart] = React.useState<string>("");
 
   React.useEffect(() => {
     NavigationBar.setVisibilityAsync("hidden");
@@ -54,26 +51,6 @@ export default function Book({ route }: Props) {
       NavigationBar.setVisibilityAsync("visible");
       setStatusBarHidden(false);
     };
-  }, []);
-
-  React.useEffect(() => {
-    setLoading(true);
-    const retriveData = async () => {
-      console.log(route.params.fileUrl);
-
-      const data = await AsyncStorage.getItem(
-        "BookProgress" + route.params.bookName
-      );
-      if (data) {
-        const dataParsed = JSON.parse(data);
-        changeFontSize(dataParsed.fontSize + "px");
-        setFontSize(dataParsed.fontSize);
-        console.log("recuperou", dataParsed.onReturn, dataParsed.fontSize);
-        setLocationToStart(dataParsed.onReturn);
-      }
-      setLoading(false);
-    };
-    retriveData();
   }, []);
 
   if (!route.params.fileUrl) {
@@ -90,10 +67,6 @@ export default function Book({ route }: Props) {
     setFontSize(fontSize - fontIncrease);
   };
 
-  if (loading) {
-    return <View></View>;
-  }
-
   const tap = Gesture.LongPress()
     .onEnd(() => {
       setShowButtons(!showButtons);
@@ -106,12 +79,12 @@ export default function Book({ route }: Props) {
     progress: number,
     currentSection: Section | null
   ) => {
-    if (currentLocation?.end?.cfi && !loadingBook) {
+    if (currentLocation?.start?.cfi && !loadingBook) {
       await AsyncStorage.setItem(
         "BookProgress" + route.params.bookName,
         JSON.stringify({
           fontSize,
-          onReturn: currentLocation?.end.cfi,
+          onReturn: currentLocation?.start.cfi,
         })
       );
     }
@@ -149,14 +122,28 @@ export default function Book({ route }: Props) {
                 defaultTheme={defaultTheme}
                 src={route.params.fileUrl}
                 fileSystem={useFileSystem}
-                onLocationsReady={() => {
+                onLocationsReady={async () => {
                   changeFontFamily("Georgia, Times New Roman, serif");
-                  goToLocation(locationTostart);
-                  changeFontSize(fontSize + "px");
-                  setLoadingBook(false);
+                  const data = await AsyncStorage.getItem(
+                    "BookProgress" + route.params.bookName
+                  );
+                  if (data) {
+                    const dataParsed = JSON.parse(data);
+                    changeFontSize(dataParsed.fontSize + "px");
+                    goToLocation(dataParsed.onReturn)
+                    setTimeout(() => {
+                      goToLocation(dataParsed.onReturn)
+                      setTimeout(() => {
+                        goToLocation(dataParsed.onReturn)
+                        setLoadingBook(false)
+                      }, 1000);
+                    }, 1000);
+                  }
+
                 }}
                 flow="paginated"
                 injectedJavascript={INJECTEDJAVASCRIPT}
+                waitForLocationsReady
               />
             </View>
             <View
