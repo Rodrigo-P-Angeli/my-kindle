@@ -123,23 +123,30 @@ export default function Book({ route }: Props) {
                 src={route.params.fileUrl}
                 fileSystem={useFileSystem}
                 onLocationsReady={async () => {
-                  changeFontFamily("Georgia, Times New Roman, serif");
-                  const data = await AsyncStorage.getItem(
-                    "BookProgress" + route.params.bookName
-                  );
-                  if (data) {
-                    const dataParsed = JSON.parse(data);
-                    changeFontSize(dataParsed.fontSize + "px");
-                    goToLocation(dataParsed.onReturn)
-                    setTimeout(() => {
+                  try {
+                    changeFontFamily("Georgia, Times New Roman, serif");
+                    const data = await AsyncStorage.getItem(
+                      "BookProgress" + route.params.bookName
+                    );
+                    if (data) {
+                      const dataParsed = JSON.parse(data);
+                      changeFontSize(dataParsed.fontSize + "px");
                       goToLocation(dataParsed.onReturn)
                       setTimeout(() => {
                         goToLocation(dataParsed.onReturn)
-                        setLoadingBook(false)
+                        setTimeout(() => {
+                          goToLocation(dataParsed.onReturn)
+                          setLoadingBook(false)
+                        }, 1000);
                       }, 1000);
-                    }, 1000);
+                    } else {
+                      changeFontSize("40px");
+                      setLoadingBook(false)
+                    }
+                  } catch (error) {
+                    changeFontSize("40px");
+                    setLoadingBook(false)
                   }
-
                 }}
                 flow="paginated"
                 injectedJavascript={INJECTEDJAVASCRIPT}
@@ -189,34 +196,34 @@ export default function Book({ route }: Props) {
   );
 }
 
-const INJECTEDJAVASCRIPT = `const meta = document.createElement('meta'); meta.setAttribute('content', 'width=device-width, initial-scale=1, user-scalable=0'); meta.setAttribute('name', 'viewport'); document.getElementsByTagName('head')[0].appendChild(meta); `;
+const INJECTEDJAVASCRIPT = `
+  const meta = document.createElement('meta'); 
+  meta.setAttribute('content', 'width=device-width, initial-scale=1, user-scalable=0'); 
+  meta.setAttribute('name', 'viewport'); 
+  document.getElementsByTagName('head')[0].appendChild(meta); 
+
+  const style = document.createElement('style');
+  style.innerHTML = '* { text-align: left !important; }';
+  document.head.appendChild(style);
+`;
 const defaultTheme = {
   body: {
     background: "#000000",
     // color: "#ffffff",
-    // 'font-family': "Georgia", "Times New Roman", serif; /* parece uma fonte serifada de leitura */
-    'font-size': '18px', /* aproximação, pode estar entre 16px e 20px */
-    'line-height': '1.6', /* espaçamento de linha confortável para leitura */
+    // 'font-family': "Georgia", "Times New Roman", serif;
+    'font-size': '18px',
+    'line-height': '1.6',
     color: '#e0e0e0',
-    // color: '#000000',
+    'text-align': 'left !important',
   },
   span: {
-    // color: "#ffffff",
-    // color: '#e0e0e0',
   },
   p: {
-    // color: '#e0e0e0',
-    // color: "#ffffff",
-    // 'line-height': '2em',
-    // 'text-align': 'left'
+    'text-align': 'left !important',
   },
   div: {
-    // color: "#ffffff",
+    'text-align': 'left !important',
   },
-  calibre_13: {
-    // 'line-height': '2em'
-  },
-  calibre_11: {
-    // 'line-height': '2em',
-  }
+  calibre_13: {},
+  calibre_11: {}
 };
