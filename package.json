@@ -6,7 +6,8 @@
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "update": "eas update --branch production --message \"Atualização rápida via JS\""
   },
   "dependencies": {
     "@epubjs-react-native/core": "^1.4.7",

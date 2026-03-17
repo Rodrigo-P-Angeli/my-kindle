@@ -121,7 +121,7 @@ const AddBookButton = ({
       }}
       style={{
         position: "absolute",
-        bottom: 30,
+        bottom: 50,
         right: 30,
         shadowColor: "#fff",
         shadowOffset: { width: 0, height: 4 },
